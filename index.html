@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101a2b">
+  <meta name="description" content="Local weather conditions, hourly forecasts, and a 7-day outlook.">
+  <title>Weather Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Weather Monitor home">
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><circle cx="20" cy="19" r="9"></circle><path d="M20 3v4M20 31v4M4 19h4m24 0h4M8.7 7.7l2.8 2.8m17 17 2.8 2.8m0-22.6-2.8 2.8m-17 17-2.8 2.8"></path><path d="M17 37h17a7 7 0 0 0 0-14h-1.1A11 11 0 0 0 12 27.2 5 5 0 0 0 17 37Z"></path></svg>
+        </span>
+        <span class="brand-copy"><strong>weather</strong><span>MONITOR</span></span>
+      </a>
+
+      <div class="sidebar-label">YOUR WEATHER</div>
+      <div class="saved-location active" id="active-location">
+        <span class="saved-icon">⌖</span>
+        <span class="saved-copy"><strong id="sidebar-city">Choose a location</strong><small id="sidebar-region">Search to get started</small></span>
+        <span class="location-dot"></span>
+      </div>
+      <button class="add-location" id="focus-search"><span>＋</span> Add a location</button>
+
+      <div class="sidebar-bottom">
+        <div class="sidebar-label">DISPLAY UNITS</div>
+        <div class="unit-control" role="group" aria-label="Temperature units">
+          <button class="unit-button selected" data-temp-unit="C">°C</button>
+          <button class="unit-button" data-temp-unit="F">°F</button>
+        </div>
+        <div class="sidebar-note">
+          <span class="note-icon">◷</span>
+          <span>Local time shown for each location.</span>
+        </div>
+        <div class="sidebar-footer">Weather data by <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="breadcrumb"><span>Weather</span><span class="crumb-divider">/</span><strong id="breadcrumb-city">Overview</strong></div>
+        <div class="topbar-actions">
+          <div class="unit-switch" role="group" aria-label="Wind speed units">
+            <button class="wind-unit selected" data-wind-unit="kmh">km/h</button>
+            <span></span>
+            <button class="wind-unit" data-wind-unit="mph">mph</button>
+          </div>
+          <button class="icon-button" id="refresh-button" aria-label="Refresh weather" title="Refresh weather">
+            <svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"></path><path d="M5.6 9A7 7 0 0 1 18 6.5L20 12M4 12l2 5.5A7 7 0 0 0 18.4 15"></path></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="search-section">
+        <div class="search-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> YOUR LOCAL FORECAST</div>
+          <h1>Weather, <span>where you are.</span></h1>
+          <p>Explore current conditions and the days ahead.</p>
+        </div>
+        <div class="search-tools">
+          <div class="search-controls">
+            <div class="search-wrap">
+              <label class="search-box" for="location-search">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.5 4.5"></path></svg>
+                <input id="location-search" type="search" placeholder="Search city, area, district or country" autocomplete="off" maxlength="120">
+                <span class="search-hint">↵</span>
+              </label>
+              <div class="search-results" id="search-results" role="listbox" aria-label="Location suggestions" hidden></div>
+            </div>
+            <button class="location-button" id="location-button" type="button" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.7 1.7-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.2h-2.4v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1L8 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H6.7v-2.4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L8 8.6l1.7-1.7.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5v-.2h2.4v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.7 1.7-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.2V14h-.2a1.7 1.7 0 0 0-1.5 1Z"></path></svg>
+              <span>Precise GPS location</span>
+            </button>
+          </div>
+          <div class="location-privacy">Auto-detects an approximate area using your public IP (FreeIPAPI); no GPS prompt. Precise GPS is optional.</div>
+        </div>
+      </section>
+
+      <div class="status-message" id="status-message" role="status" aria-live="polite" hidden></div>
+      <section id="weather-content" aria-live="polite" hidden>
+        <section class="overview-grid">
+          <article class="hero-card">
+            <div class="hero-topline">
+              <div>
+                <div class="location-kicker"><span class="pin">⌖</span><span id="location-line"></span></div>
+                <h2 id="current-date"></h2>
+                <div class="local-time" id="local-time"></div>
+              </div>
+              <div class="live-badge"><span></span> LIVE CONDITIONS</div>
+            </div>
+            <div class="hero-weather">
+              <div class="temperature-block">
+                <div class="temperature" id="current-temperature">--°</div>
+                <div class="condition" id="current-condition">Loading conditions</div>
+                <div class="feels-like" id="feels-like"></div>
+              </div>
+              <div class="weather-art" id="weather-art" aria-hidden="true">☀️</div>
+            </div>
+            <div class="hero-bottom">
+              <div><span class="hero-bottom-icon">↑</span><span>High</span><strong id="today-high">--°</strong></div>
+              <i></i>
+              <div><span class="hero-bottom-icon">↓</span><span>Low</span><strong id="today-low">--°</strong></div>
+              <i></i>
+              <div><span class="hero-bottom-icon">☂</span><span>Rain</span><strong id="today-rain">--%</strong></div>
+            </div>
+          </article>
+
+          <article class="sun-card">
+            <div class="section-heading">
+              <div><span class="section-icon sun-icon">☼</span><h3>Sun & daylight</h3></div>
+              <span class="subtle-label">TODAY</span>
+            </div>
+            <div class="sun-visual">
+              <div class="sun-path"></div>
+              <span class="sunrise-icon">◒</span><span class="sunset-icon">◓</span>
+              <span class="sun-dot"></span>
+              <span class="sunrise-label" id="sunrise-time">--:--</span>
+              <span class="sunset-label" id="sunset-time">--:--</span>
+            </div>
+            <div class="sun-times"><div><small>SUNRISE</small><strong id="sunrise-time-bottom">--:--</strong></div><div><small>SUNSET</small><strong id="sunset-time-bottom">--:--</strong></div></div>
+            <div class="daylight-row"><span>☀</span><span>Daylight</span><strong id="daylight-duration">--</strong></div>
+          </article>
+        </section>
+
+        <section class="section-block">
+          <div class="section-heading">
+            <div><span class="section-icon metric-icon">▦</span><h3>Weather details</h3></div>
+            <span class="updated-label" id="updated-time"></span>
+          </div>
+          <div class="metrics-grid">
+            <article class="metric-card"><div class="metric-top"><span>Humidity</span><span class="metric-symbol humidity-symbol">◉</span></div><strong id="humidity">--%</strong><div class="metric-foot" id="humidity-note">Relative humidity</div><div class="meter"><span id="humidity-meter"></span></div></article>
+            <article class="metric-card"><div class="metric-top"><span>Wind</span><span class="metric-symbol wind-symbol">↗</span></div><strong id="wind">--</strong><div class="metric-foot" id="wind-direction">Direction --</div><div class="compass"><span>N</span><i id="wind-arrow">↑</i></div></article>
+            <article class="metric-card"><div class="metric-top"><span>Feels like</span><span class="metric-symbol feels-symbol">♨</span></div><strong id="feels-detail">--°</strong><div class="metric-foot" id="feels-note">Compared to actual</div><div class="comfort-track"><i id="comfort-marker"></i></div></article>
+            <article class="metric-card"><div class="metric-top"><span>UV index</span><span class="metric-symbol uv-symbol">☼</span></div><strong id="uv-index">--</strong><div class="metric-foot" id="uv-note">UV intensity</div><div class="uv-meter"><span id="uv-meter"></span></div></article>
+            <article class="metric-card"><div class="metric-top"><span>Visibility</span><span class="metric-symbol visibility-symbol">◉</span></div><strong id="visibility">--</strong><div class="metric-foot">Viewing distance</div><div class="visibility-dots"><i></i><i></i><i></i><i></i><i></i></div></article>
+            <article class="metric-card"><div class="metric-top"><span>Pressure</span><span class="metric-symbol pressure-symbol">⌁</span></div><strong id="pressure">--</strong><div class="metric-foot">Mean sea level</div><div class="pressure-chart"><svg viewBox="0 0 120 25" preserveAspectRatio="none"><path d="M0 19 C12 19 13 10 25 12 S39 19 49 15 S62 6 72 11 S89 21 98 13 S111 5 120 7"></path></svg></div></article>
+            <article class="metric-card"><div class="metric-top"><span>Precipitation</span><span class="metric-symbol rain-symbol">♧</span></div><strong id="precipitation">--</strong><div class="metric-foot" id="precipitation-note">Today so far</div><div class="rain-dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
+            <article class="metric-card"><div class="metric-top"><span>Cloud cover</span><span class="metric-symbol cloud-symbol">☁</span></div><strong id="cloud-cover">--%</strong><div class="metric-foot">Of the sky covered</div><div class="cloud-meter"><span id="cloud-meter"></span></div></article>
+          </div>
+        </section>
+
+        <section class="section-block forecast-section">
+          <div class="section-heading forecast-heading">
+            <div><span class="section-icon hourly-icon">◷</span><h3>Hourly forecast</h3></div>
+            <span class="section-caption">Next 24 hours</span>
+          </div>
+          <div class="hourly-list" id="hourly-list"></div>
+        </section>
+
+        <section class="section-block forecast-section">
+          <div class="section-heading forecast-heading">
+            <div><span class="section-icon weekly-icon">▤</span><h3>7-day forecast</h3></div>
+            <span class="section-caption">Daily outlook</span>
+          </div>
+          <div class="daily-list" id="daily-list"></div>
+        </section>
+      </section>
+
+      <section class="empty-state" id="empty-state">
+        <div class="empty-art">🌤️</div>
+        <h2>Find your forecast</h2>
+        <p>Search for a city, neighborhood, district, or country to see local weather conditions and forecasts.</p>
+      </section>
+      <footer class="page-footer"><span>Weather: <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a> · Place names: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a></span><span id="coordinates"></span></footer>
+    </main>
+  </div>
+  <script src="/app.js" defer></script>
+</body>
+</html>
