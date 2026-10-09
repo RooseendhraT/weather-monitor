@@ -11,6 +11,19 @@ const state = {
   startupController: null
 };
 let weatherSequence = 0;
+let lastBrowserReverseRequest = 0;
+
+const STATIC_API_URLS = {
+  search: "https://geocoding-api.open-meteo.com/v1/search",
+  weather: "https://api.open-meteo.com/v1/forecast",
+  reverse: "https://api.bigdatacloud.net/data/reverse-geocode-client"
+};
+
+const STATIC_FORECAST_FIELDS = {
+  current: "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m",
+  hourly: "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,visibility,uv_index,wind_speed_10m,wind_direction_10m,wind_gusts_10m",
+  daily: "weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,rain_sum,showers_sum,snowfall_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant"
+};
 
 const $ = (id) => document.getElementById(id);
 
@@ -126,6 +139,62 @@ function setStatus(message = "", isLoading = false) {
 }
 
 async function requestJson(url, signal) {
+  if (window.location.hostname.endsWith(".github.io") && url.startsWith("/api/")) {
+    const apiUrl = new URL(url, window.location.href);
+    let remoteUrl;
+    if (apiUrl.pathname === "/api/search") {
+      const params = new URLSearchParams({
+        name: apiUrl.searchParams.get("q") || "",
+        count: "8",
+        language: "en",
+        format: "json"
+      });
+      remoteUrl = `${STATIC_API_URLS.search}?${params}`;
+    } else if (apiUrl.pathname === "/api/weather") {
+      const params = new URLSearchParams({
+        latitude: apiUrl.searchParams.get("lat") || "",
+        longitude: apiUrl.searchParams.get("lon") || "",
+        current: STATIC_FORECAST_FIELDS.current,
+        hourly: STATIC_FORECAST_FIELDS.hourly,
+        daily: STATIC_FORECAST_FIELDS.daily,
+        forecast_days: "7",
+        timezone: "auto",
+        wind_speed_unit: "kmh",
+        precipitation_unit: "mm"
+      });
+      remoteUrl = `${STATIC_API_URLS.weather}?${params}`;
+    } else if (apiUrl.pathname === "/api/reverse") {
+      const elapsed = Date.now() - lastBrowserReverseRequest;
+      if (elapsed < 1100) await new Promise((resolve) => setTimeout(resolve, 1100 - elapsed));
+      if (signal?.aborted) throw new DOMException("Request was aborted.", "AbortError");
+      lastBrowserReverseRequest = Date.now();
+      const params = new URLSearchParams({
+        latitude: apiUrl.searchParams.get("lat") || "",
+        longitude: apiUrl.searchParams.get("lon") || "",
+        localityLanguage: "en"
+      });
+      remoteUrl = `${STATIC_API_URLS.reverse}?${params}`;
+    } else {
+      throw new Error("This API endpoint is not available on the static website.");
+    }
+
+    const response = await fetch(remoteUrl, { signal });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.reason || data.error || `Request failed (${response.status}).`);
+    if (apiUrl.pathname === "/api/reverse") {
+      const administrative = data.localityInfo?.administrative || [];
+      const district = administrative.find((area) => /\bdistrict\b/i.test(area.description || ""));
+      return {
+        name: data.locality || data.city || "Current location",
+        admin2: district?.name?.replace(/\s+district$/i, "") || data.city || undefined,
+        admin1: data.principalSubdivision || undefined,
+        country: data.countryName || undefined,
+        postcode: data.postcode || undefined
+      };
+    }
+    return data;
+  }
+
   const response = await fetch(url, { signal });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || `Request failed (${response.status}).`);
